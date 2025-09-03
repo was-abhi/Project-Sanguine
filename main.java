@@ -3,5 +3,6 @@ class Main{
     System.out.println("Hello World");
     System.out.println("push1");
     System.out.println("push2");
+    System.out.println("push3");
   }
 }
