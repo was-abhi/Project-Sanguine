@@ -1,6 +1,5 @@
 import java.util.*;
 
-// Donor class
 class Donor {
     private String donorID;
     private String name;
@@ -14,7 +13,16 @@ class Donor {
     }
 
     public void viewProfile() {
-        System.out.println("Donor: " + name + " | Blood Group: " + bloodGroup);
+        System.out.println("Donor ID: " + donorID);
+        System.out.println("Name: " + name);
+        System.out.println("Blood Group: " + bloodGroup);
+        System.out.println("Eligible: " + eligible);
+    }
+
+    public void editProfile(String newName, String newBloodGroup) {
+        this.name = newName;
+        this.bloodGroup = newBloodGroup;
+        System.out.println("Profile updated successfully!");
     }
 
     public void logDonation() {
@@ -27,7 +35,6 @@ class Donor {
     }
 }
 
-// Acceptor class
 class Acceptor {
     private String acceptorID;
     private String name;
@@ -43,7 +50,6 @@ class Acceptor {
     }
 }
 
-// Hospital class
 class Hospital {
     private String hospitalID;
     private String name;
@@ -53,17 +59,16 @@ class Hospital {
         this.name = name;
     }
 
-    public void conductBloodTest(Donor donor) {
-        System.out.println("Hospital " + name + " conducted blood test for " + donor + ".");
-    }
-
     public void approveRequest(BloodRequest request) {
         request.updateStatus("Approved");
         System.out.println("Hospital " + name + " approved request " + request.getRequestID());
     }
+
+    public void conductBloodTest(Donor donor) {
+        System.out.println("Hospital " + name + " conducted blood test for donor.");
+    }
 }
 
-// Admin class
 class Admin {
     private String adminID;
     private String username;
@@ -76,9 +81,12 @@ class Admin {
     public void moderateRequests(BloodRequest request) {
         System.out.println("Admin " + username + " moderated request " + request.getRequestID());
     }
+
+    public void handleIssues() {
+        System.out.println("Admin " + username + " is handling reported issues.");
+    }
 }
 
-// BloodRequest class
 class BloodRequest {
     private String requestID;
     private String bloodGroup;
@@ -105,33 +113,81 @@ class BloodRequest {
     }
 }
 
-// Main Simulation
 public class BloodDonationSystem {
+    static Scanner sc = new Scanner(System.in);
+
     public static void main(String[] args) {
-        // Create objects
-        Donor d1 = new Donor("D001", "Rahul", "A+");
-        Acceptor a1 = new Acceptor("A001", "Anjali");
-        Hospital h1 = new Hospital("H001", "City Hospital");
+        Donor donor = new Donor("D001", "Rahul", "A+");
+        Acceptor acceptor = new Acceptor("A001", "Anjali");
+        Hospital hospital = new Hospital("H001", "City Hospital");
         Admin admin = new Admin("ADM001", "SystemAdmin");
+        BloodRequest currentRequest = null;
 
-        // Workflow: Acceptor requests blood
-        BloodRequest req = a1.requestBlood("A+", 2);
+        while (true) {
+            System.out.println("\n--- Blood Donation System ---");
+            System.out.println("1. Login as Donor");
+            System.out.println("2. Login as Acceptor");
+            System.out.println("3. Login as Hospital");
+            System.out.println("4. Login as Admin");
+            System.out.println("5. Exit");
+            System.out.print("Choose option: ");
+            int choice = sc.nextInt();
 
-        // Hospital approves
-        h1.approveRequest(req);
+            switch (choice) {
+                case 1: // Donor
+                    System.out.println("\n--- Donor Menu ---");
+                    System.out.println("1. View Profile");
+                    System.out.println("2. Edit Profile");
+                    System.out.println("3. Log Donation");
+                    System.out.print("Choose: ");
+                    int dChoice = sc.nextInt();
+                    sc.nextLine(); // consume newline
+                    if (dChoice == 1) {
+                        donor.viewProfile();
+                    } else if (dChoice == 2) {
+                        System.out.print("Enter new name: ");
+                        String newName = sc.nextLine();
+                        System.out.print("Enter new blood group: ");
+                        String newBloodGroup = sc.nextLine();
+                        donor.editProfile(newName, newBloodGroup);
+                    } else if (dChoice == 3) {
+                        donor.logDonation();
+                    }
+                    break;
 
-        // Admin moderates
-        admin.moderateRequests(req);
+                case 2: // Acceptor
+                    System.out.println("\n--- Acceptor Menu ---");
+                    System.out.print("Enter blood group: ");
+                    String bg = sc.next();
+                    System.out.print("Enter units: ");
+                    int units = sc.nextInt();
+                    currentRequest = acceptor.requestBlood(bg, units);
+                    break;
 
-        // Notify donor
-        d1.notifyDonor("Blood request approved. Please donate if eligible.");
+                case 3: // Hospital
+                    System.out.println("\n--- Hospital Menu ---");
+                    if (currentRequest != null) {
+                        hospital.approveRequest(currentRequest);
+                    } else {
+                        System.out.println("No active requests to approve.");
+                    }
+                    break;
 
-        // Donor logs donation
-        d1.logDonation();
+                case 4: // Admin
+                    System.out.println("\n--- Admin Menu ---");
+                    if (currentRequest != null) {
+                        admin.moderateRequests(currentRequest);
+                    }
+                    admin.handleIssues();
+                    break;
 
-        // Donor views profile
-        d1.viewProfile();
+                case 5:
+                    System.out.println("Exiting...");
+                    return;
 
-        System.out.println("Final Request Status: " + req.getStatus());
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
     }
 }
